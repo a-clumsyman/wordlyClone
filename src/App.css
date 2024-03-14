@@ -1,38 +1,78 @@
 .App {
   text-align: center;
+  margin-top: 50px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.guessGrid {
+  display: inline-grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 10px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.guessRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.guessBox {
+  width: 60px;
+  height: 60px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  border: 2px solid #ccc;
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  background-color: #eee; 
+}
+
+
+.correct {
+  background-color: green;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+
+.misplaced {
+  background-color: yellow;
+  color: black;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+input, button {
+  margin: 20px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+button {
+  cursor: pointer;
+}
+.revealWord {
+  margin-top: 20px;
+  font-size: 20px;
+  color: red;
+}
+
+button {
+  margin: 20px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
+.restartButton {
+  background-color: #4CAF50; 
+  color: white;
+  padding: 14px 20px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.restartButton:hover {
+  background-color: #45a049;
 }
