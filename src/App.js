@@ -188,31 +188,42 @@ const fetchWord = () => {
 
 
   const getLetterClass = (guess, index, targetWord) => {
-    // Initialize an object to count occurrences in the target word
-    const letterCount = {};
-    targetWord.split('').forEach(char => {
-      letterCount[char] = (letterCount[char] || 0) + 1;
-    });
+    const letter = guess[index];
+    // Create arrays to track the status of each letter in the guess.
+    const correctIndices = [];
+    const misplacedIndices = [];
   
-    // Track how many times we've seen each character in the guess so far
-    const seenLetters = {};
-    let status = '';
-    for (let i = 0; i <= index; i++) {
-      const char = guess[i];
-      seenLetters[char] = (seenLetters[char] || 0) + 1;
-  
-      // Determine if the current character is correct, misplaced, or incorrect
-      if (targetWord[i] === char) {
-        status = 'correct';
-      } else if (targetWord.includes(char) && seenLetters[char] <= letterCount[char]) {
-        status = 'misplaced';
-      } else {
-        status = 'incorrect';
+    // First, identify all correctly positioned letters.
+    for (let i = 0; i < targetWord.length; i++) {
+      if (guess[i] === targetWord[i]) {
+        correctIndices.push(i);
       }
     }
   
-    return status;
+    // Then, identify misplaced letters that are not already marked as correct.
+    for (let i = 0; i < targetWord.length; i++) {
+      if (targetWord.includes(guess[i]) && !correctIndices.includes(i)) {
+        // A letter is misplaced if it's in the target word and not in its correct position.
+        // It shouldn't be marked misplaced if another instance of the same letter is correct.
+        const targetLetterOccurrences = targetWord.split(guess[i]).length - 1;
+        const guessLetterCorrectOccurrences = correctIndices.filter(idx => guess[idx] === guess[i]).length;
+        const guessLetterMisplacedOccurrences = misplacedIndices.filter(idx => guess[idx] === guess[i]).length;
+        if ((guessLetterCorrectOccurrences + guessLetterMisplacedOccurrences) < targetLetterOccurrences) {
+          misplacedIndices.push(i);
+        }
+      }
+    }
+  
+    // Determine the class for the current letter.
+    if (correctIndices.includes(index)) {
+      return 'correct';
+    } else if (misplacedIndices.includes(index)) {
+      return 'misplaced';
+    } else {
+      return 'incorrect';
+    }
   };
+  
   if (!targetWord) return <div>Loading...</div>;
 
   return (
