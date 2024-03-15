@@ -68,21 +68,36 @@ function App() {
   }, []);
 // New function to fetch a word and reset game state
 const fetchWord = () => {
-  fetch('https://random-word-api.herokuapp.com/word?length=5')
+  // Using the Datamuse API to get a list of words that match the pattern (5-letter words)
+  fetch('https://api.datamuse.com/words?sp=?????&max=200')
     .then(response => response.json())
     .then(data => {
-      if (data && data.length > 0) {
-        setTargetWord(data[0]);
-        setGameOver(false); // Resetting gameOver to false for new game
-        setGuesses(Array(maxTries).fill(""));
-        setCurrentGuess("");
-        setAttempt(0);
-        setLetterStatus(initialLetterStatus);
+      if (data.length > 0) {
+        // Filter the results to get only 5-letter words
+        const fiveLetterWords = data.filter(word => word.word.length === 5);
+        if (fiveLetterWords.length > 0) {
+          // Randomly select a word from the list of 5-letter words
+          const randomIndex = Math.floor(Math.random() * fiveLetterWords.length);
+          setTargetWord(fiveLetterWords[randomIndex].word);
+          setGameOver(false);
+          setGuesses(Array(maxTries).fill(""));
+          setCurrentGuess("");
+          setAttempt(0);
+          setLetterStatus(initialLetterStatus);
+        } else {
+          // No 5-letter words found in the data
+          console.error('No 5-letter words found in the API response.');
+        }
+      } else {
+        // No words were returned by the API
+        console.error('No words found from the API.');
       }
     })
-    .catch(error => console.error('Error fetching the target word:', error));
+    .catch(error => {
+      // Handle any errors during the fetch operation
+      console.error('Error fetching the target word:', error);
+    });
 };
-
 
 
   useEffect(() => {
@@ -138,10 +153,10 @@ const fetchWord = () => {
   
           if (currentGuess === targetWord) {
             setGameOver(true);
-            alert(`Congratulations! The word was ${targetWord.toUpperCase()}.`);
+            // alert(`Congratulations! The word was ${targetWord.toUpperCase()}.`);
           } else if (attempt + 1 >= maxTries) {
             setGameOver(true);
-            alert(`Out of attempts! The word was ${targetWord.toUpperCase()}.`);
+            // alert(`Out of attempts! The word was ${targetWord.toUpperCase()}.`);
           }
           setAttempt(attempt + 1);
           setCurrentGuess("");
@@ -169,20 +184,35 @@ const fetchWord = () => {
   };
 
   
-  const restartGame = () => {
-    fetchWord(); // This resets the game
-  };
+ 
 
 
-  const getLetterClass = (guess, index) => {
-    if (targetWord[index] === guess[index]) {
-      return "correct"; // Correct letter in the correct position
-    } else if (targetWord.includes(guess[index])) {
-      return "misplaced"; // Correct letter in the wrong position
+  const getLetterClass = (guess, index, targetWord) => {
+    // Initialize an object to count occurrences in the target word
+    const letterCount = {};
+    targetWord.split('').forEach(char => {
+      letterCount[char] = (letterCount[char] || 0) + 1;
+    });
+  
+    // Track how many times we've seen each character in the guess so far
+    const seenLetters = {};
+    let status = '';
+    for (let i = 0; i <= index; i++) {
+      const char = guess[i];
+      seenLetters[char] = (seenLetters[char] || 0) + 1;
+  
+      // Determine if the current character is correct, misplaced, or incorrect
+      if (targetWord[i] === char) {
+        status = 'correct';
+      } else if (targetWord.includes(char) && seenLetters[char] <= letterCount[char]) {
+        status = 'misplaced';
+      } else {
+        status = 'incorrect';
+      }
     }
-    return ""; // Incorrect letter
+  
+    return status;
   };
-
   if (!targetWord) return <div>Loading...</div>;
 
   return (
@@ -204,18 +234,23 @@ const fetchWord = () => {
         {guesses.map((guess, rowIndex) => (
           <div key={rowIndex} className="guessRow">
             {Array.from(guess.padEnd(5, ' ')).map((char, charIndex) => (
-              <div key={charIndex} className={`guessBox ${getLetterClass(guess, charIndex, targetWord)}`}>
+              <div key={charIndex} className={`guessBox ${getLetterClass(guess, charIndex, targetWord, guesses.slice(0, rowIndex))}`}>
                 {char.toUpperCase()}
               </div>
             ))}
           </div>
         ))}
-      </div>
+     </div>
       <Keyboard onKeyPress={handleKeyPress} letterStatus={letterStatus} />
       {gameOver && (
         <>
-          <p className="revealWord">The word was: {targetWord.toUpperCase()}</p>
-          <button onClick={() => fetchWord()} className="restartButton">Restart Game</button>
+          {guesses.includes(targetWord) ? (
+      <p className="revealWord">Congratulations! The word was: {targetWord.toUpperCase()}.</p>
+    ) : (
+      <p className="revealWord">Better luck next time! The word was: {targetWord.toUpperCase()}.</p>
+    )}
+
+          <button onClick={fetchWord} className="restartButton">Restart Game</button>
         </>
       )}
     </div>
