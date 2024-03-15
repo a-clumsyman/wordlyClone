@@ -76,3 +76,31 @@ button {
 .restartButton:hover {
   background-color: #45a049;
 }
+
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.key {
+  width: 36px;
+  height: 60px;
+  margin: 4px;
+  border: none;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.key.correct {
+  background-color: green;
+}
+
+.key.misplaced {
+  background-color: yellow;
+}
+
+.key.incorrect {
+  background-color: darkgrey;
+}
