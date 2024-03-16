@@ -184,45 +184,34 @@ const fetchWord = () => {
   };
 
   
- 
-
-
-  const getLetterClass = (guess, index, targetWord) => {
-    const letter = guess[index];
-    // Create arrays to track the status of each letter in the guess.
-    const correctIndices = [];
-    const misplacedIndices = [];
-  
-    // First, identify all correctly positioned letters.
-    for (let i = 0; i < targetWord.length; i++) {
-      if (guess[i] === targetWord[i]) {
-        correctIndices.push(i);
-      }
-    }
-  
-    // Then, identify misplaced letters that are not already marked as correct.
-    for (let i = 0; i < targetWord.length; i++) {
-      if (targetWord.includes(guess[i]) && !correctIndices.includes(i)) {
-        // A letter is misplaced if it's in the target word and not in its correct position.
-        // It shouldn't be marked misplaced if another instance of the same letter is correct.
-        const targetLetterOccurrences = targetWord.split(guess[i]).length - 1;
-        const guessLetterCorrectOccurrences = correctIndices.filter(idx => guess[idx] === guess[i]).length;
-        const guessLetterMisplacedOccurrences = misplacedIndices.filter(idx => guess[idx] === guess[i]).length;
-        if ((guessLetterCorrectOccurrences + guessLetterMisplacedOccurrences) < targetLetterOccurrences) {
-          misplacedIndices.push(i);
-        }
-      }
-    }
-  
-    // Determine the class for the current letter.
-    if (correctIndices.includes(index)) {
-      return 'correct';
-    } else if (misplacedIndices.includes(index)) {
-      return 'misplaced';
-    } else {
-      return 'incorrect';
-    }
-  };
+ const getAllLettersClasses = (guess, targetWord) => {
+   const occurances = [...targetWord].reduce((acc,letter)=>{
+     if(acc[letter]){
+       acc[letter]+=1;
+       return acc
+     }
+      acc[letter]= 1;
+     return acc;
+   },{});
+    
+    [...guess].forEach((letter,index)=>{
+     if(letter === targetWord[index]){
+       if(occurances[letter])occurances[letter]-=1
+     }
+    })
+    
+   return [...guess].map((letter,index)=>{
+     if(letter === targetWord[index]){
+       return 'correct'
+     }
+        
+     else if(targetWord.includes(letter) && occurances[letter]>0){
+       if(occurances[letter])occurances[letter]-=1
+       return 'misplaced'
+     }
+     return 'incorrect'
+   })
+ }
   
   if (!targetWord) return <div>Loading...</div>;
 
@@ -242,15 +231,18 @@ const fetchWord = () => {
         <button onClick={handleSubmit} disabled={gameOver || currentGuess.length !== 5}>Submit</button>
       </form>
       <div className="guessGrid">
-        {guesses.map((guess, rowIndex) => (
+        {guesses.map((guess, rowIndex) => {
+          const letterClasses = getAllLetterClasses(guess,targetWord)
+          return (
           <div key={rowIndex} className="guessRow">
             {Array.from(guess.padEnd(5, ' ')).map((char, charIndex) => (
-              <div key={charIndex} className={`guessBox ${getLetterClass(guess, charIndex, targetWord, guesses.slice(0, rowIndex))}`}>
+              <div key={charIndex} className={`guessBox ${letterClasses[charIndex]}`}>
                 {char.toUpperCase()}
               </div>
             ))}
           </div>
-        ))}
+        )
+        })}
      </div>
       <Keyboard onKeyPress={handleKeyPress} letterStatus={letterStatus} />
       {gameOver && (
