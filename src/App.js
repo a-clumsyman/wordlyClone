@@ -185,7 +185,7 @@ const fetchWord = () => {
 
   
  const getAllLettersClasses = (guess, targetWord) => {
-   const letterOccurances = [...targetWord].reduce((acc,letter)=>{
+   const occurances = [...targetWord].reduce((acc,letter)=>{
      if(acc[letter]){
        acc[letter]+=1;
        return acc
@@ -193,12 +193,10 @@ const fetchWord = () => {
       acc[letter]= 1;
      return acc;
    },{});
-
-    const classes = [];
     
     [...guess].forEach((letter,index)=>{
      if(letter === targetWord[index]){
-       if(letterOccurances[letter])letterOccurances[letter]-=1
+       if(occurances[letter])occurances[letter]-=1
      }
     })
     
@@ -207,8 +205,8 @@ const fetchWord = () => {
        return 'correct'
      }
         
-     else if(targetWord.includes(letter) && letterOccurances[letter]>0){
-       if(letterOccurances[letter])letterOccurances[letter]-=1
+     else if(targetWord.includes(letter) && occurances[letter]>0){
+       if(occurances[letter])occurances[letter]-=1
        return 'misplaced'
      }
      return 'incorrect'
